@@ -19,7 +19,7 @@ CACHE_HASHES_FILE = "processed_hashes.pkl"
 def normalize_text(text):
     if isinstance(text, str):
         text = text.strip()
-        text = unicodedata.normalize("NFKD", text)
+        text = unicodedata.normalize("NFC", text)
         text = re.sub(r"\s+", " ", text)
     return text
 
