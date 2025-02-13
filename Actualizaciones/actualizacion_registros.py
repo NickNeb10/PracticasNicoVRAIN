@@ -5,9 +5,13 @@
 import os
 import requests
 import hashlib
+from datetime import datetime
 
 url = 'https://dadesobertes.gva.es/dataset/a8a4b590-772d-4cba-a15c-fe6eff346431/resource/4e454fb5-1ba1-4ccd-8191-cc9b3700e47b/download/certificacion-energetica-de-edificios-en-valencia.csv'
-file_path = '/home/nnebot/PracticasNicoVRAIN/Datos/registros_energeticos.csv'
+folder_path = '/home/nnebot/PracticasNicoVRAIN/Datos/RegistrosEnergeticos'
+
+if not os.path.exists(folder_path):
+    os.makedirs(folder_path)
 
 def get_file_hash(file_path):
     try:
@@ -20,14 +24,18 @@ def get_file_hash(file_path):
 response = requests.get(url)
 
 if response.status_code == 200:
+    current_date = datetime.now().strftime('%d-%m-%Y')
+    file_name = f'registros_energeticos_{current_date}.csv'
+    file_path = os.path.join(folder_path, file_name)
+    
     new_file_hash = hashlib.md5(response.content).hexdigest()
-    old_file_hash = get_file_hash(file_path)
-
-    if old_file_hash != new_file_hash:
+    existing_files = [f for f in os.listdir(folder_path) if f.endswith('.csv')]
+    
+    if file_name not in existing_files:
         with open(file_path, 'wb') as f:
             f.write(response.content)
-        print("El archivo ha sido actualizado.")
+        print(f"El archivo ha sido guardado como {file_name}.")
     else:
-        print("El archivo no ha cambiado.")
+        print(f"El archivo {file_name} ya existe.")
 else:
     print(f"Error al descargar el archivo: {response.status_code}")
