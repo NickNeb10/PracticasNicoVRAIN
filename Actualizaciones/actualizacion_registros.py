@@ -8,7 +8,7 @@ import hashlib
 from datetime import datetime
 
 url = 'https://dadesobertes.gva.es/dataset/a8a4b590-772d-4cba-a15c-fe6eff346431/resource/4e454fb5-1ba1-4ccd-8191-cc9b3700e47b/download/certificacion-energetica-de-edificios-en-valencia.csv'
-folder_path = '/home/nnebot/PracticasNicoVRAIN/Datos/RegistrosEnergeticos'
+folder_path = '/home/gti/PracticasNicoVRAIN/Datos/RegistrosEnergeticos'
 
 if not os.path.exists(folder_path):
     os.makedirs(folder_path)
