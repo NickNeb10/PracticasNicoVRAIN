@@ -14,28 +14,23 @@ if not os.path.exists(folder_path):
     os.makedirs(folder_path)
 
 def get_file_hash(file_path):
+    """Calcula el hash MD5 de un archivo"""
     try:
         with open(file_path, 'rb') as f:
-            file_hash = hashlib.md5(f.read()).hexdigest()
-        return file_hash
+            hasher = hashlib.md5()
+            while chunk := f.read(8192):  
+                hasher.update(chunk)
+        return hasher.hexdigest()
     except FileNotFoundError:
         return None
 
 response = requests.get(url)
-
 if response.status_code == 200:
     new_file_hash = hashlib.md5(response.content).hexdigest()
-    
-    # Buscar en todos los ficheros existentes si alguno tiene el mismo hash
-    existing_files = [f for f in os.listdir(folder_path) if f.endswith('.csv')]
-    file_exists_same = False
-    for existing_file in existing_files:
-        existing_file_path = os.path.join(folder_path, existing_file)
-        if get_file_hash(existing_file_path) == new_file_hash:
-            file_exists_same = True
-            break
+    existing_files = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if f.endswith('.csv')]
+    existing_hashes = {get_file_hash(f) for f in existing_files if get_file_hash(f)}
 
-    if file_exists_same:
+    if new_file_hash in existing_hashes:
         print("El fichero descargado es igual a uno existente. No se descarga un nuevo fichero.")
     else:
         current_date = datetime.now().strftime('%d-%m-%Y')
