@@ -31,7 +31,6 @@ if response.status_code == 200:
         file_hash = get_file_hash(existing_file)
         if file_hash:
             existing_hashes[existing_file] = file_hash
-            print(f"Archivo existente: {existing_file}, Hash: {file_hash}")
     
     if new_file_hash in existing_hashes.values():
         print("El fichero descargado es igual a uno existente. No se descarga un nuevo fichero.")
