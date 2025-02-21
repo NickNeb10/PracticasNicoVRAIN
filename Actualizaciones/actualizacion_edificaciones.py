@@ -9,7 +9,7 @@ import pandas as pd
 from bs4 import BeautifulSoup
 
 pagina_url = "https://pegv.gva.es/auto/scpd/web/70403Construccion/aecv00186_v.html"
-directorio_descargas = "/home/nnebot/PracticasNicoVRAIN/Datos"
+directorio_descargas = "/home/gti/PracticasNicoVRAIN/Datos"
 base_url = "https://pegv.gva.es/auto/scpd/web/70403Construccion/"
 nombre_archivo_local = "nuevas_edificaciones.xlsx"
 ruta_archivo_local = os.path.join(directorio_descargas, nombre_archivo_local)
@@ -17,7 +17,6 @@ ruta_csv_local = os.path.join(directorio_descargas, "nuevas_edificaciones.csv")
 ruta_hash = os.path.join(directorio_descargas, "hash_edificios.txt")
 
 def obtener_enlace_excel(pagina_url, base_url):
-    """Busca el enlace del archivo Excel en la página dada."""
     response = requests.get(pagina_url)
     soup = BeautifulSoup(response.content, 'html.parser')
 
@@ -65,7 +64,6 @@ def descargar_archivo(url, destino):
     print(f"Archivo guardado en {destino}")
 
 def convertir_a_csv(ruta_excel, ruta_csv):
-    """Convierte el archivo Excel a CSV."""
     try:
         df = pd.read_excel(ruta_excel, header=0)
         df = df.iloc[8:-3]
