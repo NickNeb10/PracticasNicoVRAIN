@@ -48,18 +48,19 @@ def calcular_hash(archivo):
 
 def es_archivo_nuevo(nuevo_archivo):
     hash_nuevo = calcular_hash(nuevo_archivo)
-    archivos_pdf = [f for f in os.listdir(directorio_descargas) if f.endswith(".pdf")]
     
-    if not archivos_pdf:  
+    archivos_pdf = [f for f in os.listdir(directorio_descargas) if f.endswith(".pdf") and f != "temp.pdf"]
+    
+    if not archivos_pdf:  # Si no hay PDFs en la carpeta, es un archivo nuevo
         return True  
 
     for archivo in archivos_pdf:
         ruta_archivo = os.path.join(directorio_descargas, archivo)
         hash_existente = calcular_hash(ruta_archivo)
         print(f"Comparando con {archivo} - Hash existente: {hash_existente}")
+        
         if hash_nuevo == hash_existente:
             return False  
-    
     return True  
 
 def descargar_pdf(url):
