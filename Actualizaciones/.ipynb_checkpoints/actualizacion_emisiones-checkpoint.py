@@ -23,7 +23,6 @@ else:
     print(f"La carpeta {directorio_descargas} ya existe.")
 
 def obtener_enlace_pdf():
-    """Busca el enlace del PDF en la página dada."""
     response = requests.get(pagina_url)
     if response.status_code != 200:
         print(f"Error al acceder a la página: {response.status_code}")
@@ -48,24 +47,20 @@ def calcular_hash(archivo):
 
 def es_archivo_nuevo(nuevo_archivo):
     hash_nuevo = calcular_hash(nuevo_archivo)
-    
     archivos_pdf = [f for f in os.listdir(directorio_descargas) if f.endswith(".pdf") and f != "temp.pdf"]
-    
-    if not archivos_pdf:  # Si no hay PDFs en la carpeta, es un archivo nuevo
+    if not archivos_pdf: 
         return True  
 
     for archivo in archivos_pdf:
         ruta_archivo = os.path.join(directorio_descargas, archivo)
         hash_existente = calcular_hash(ruta_archivo)
         print(f"Comparando con {archivo} - Hash existente: {hash_existente}")
-        
         if hash_nuevo == hash_existente:
             return False  
     return True  
 
 def descargar_pdf(url):
     response = requests.get(url, stream=True)
-    
     if response.status_code != 200:
         print(f"Error al descargar el archivo: {response.status_code}")
         return None
@@ -93,7 +88,6 @@ def descargar_pdf(url):
 
 def main():
     enlace_pdf = obtener_enlace_pdf()
-    
     if enlace_pdf:
         print(f"Enlace del PDF encontrado: {enlace_pdf}")
         descargar_pdf(enlace_pdf)
