@@ -1,0 +1,17 @@
+﻿1. Parque de vehículos según tipo de vehículo y carburante. 2023;;;;;;;;;;
+;;;;;;;;;;
+;Total;Turismos;Furgonetas;Camiones;Autobuses;Motocicletas;Tractores;Ciclomotores;Remolques y semiremolques;Otros Vehículos
+Total;509974;357241;25463;23995;1066;70562;3243;18936;6293;3175
+Gasolina;288765;193533;5710;761;2;69701;0;18327;0;731
+Diésel;209135;159821;19492;22961;970;55;3243;323;0;2270
+Eléctrico;3345;1852;169;150;43;770;0;283;0;78
+Butano;13;6;0;7;0;0;0;0;0;0
+Biometano;2;2;0;0;0;0;0;0;0;0
+Etanol;1;1;0;0;0;0;0;0;0;0
+Hidrógeno;3;3;0;0;0;0;0;0;0;0
+Gas Natural Comprimido;321;175;22;92;28;0;0;0;0;4
+Gas Natural Licuado;4;3;0;1;0;0;0;0;0;0
+Gas Licuado de Petróleo;1897;1802;68;20;1;1;0;0;0;5
+Otros;1;0;0;1;0;0;0;0;0;0
+No consta;194;43;2;2;22;35;0;3;0;87
+No procede;6293;0;0;0;0;0;0;0;6293;0
