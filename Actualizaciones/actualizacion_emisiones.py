@@ -9,23 +9,20 @@ import requests
 import hashlib
 from datetime import datetime
 from bs4 import BeautifulSoup
+from colorama import Fore, Style, init
+
+init(autoreset=True)
 
 pagina_url = "https://www.miteco.gob.es/es/calidad-y-evaluacion-ambiental/temas/sistema-espanol-de-inventario-sei-/inventario-gases-efecto-invernadero.html"
 base_url = "https://www.miteco.gob.es"
-
-directorio_descargas = "/home/nnebot/PracticasNicoVRAIN/Datos/Emisiones_Invernadero"
+directorio_descargas = os.path.join("Datos", "Emisiones_Invernadero")
 os.makedirs(directorio_descargas, exist_ok=True)
 
-if not os.path.exists(directorio_descargas):
-    print(f"La carpeta {directorio_descargas} no existe. Se creará ahora.")
-    os.makedirs(directorio_descargas, exist_ok=True)
-else:
-    print(f"La carpeta {directorio_descargas} ya existe.")
-
 def obtener_enlace_pdf():
+    print(f"{Fore.YELLOW}{Style.BRIGHT}✨ Obteniendo el enlace al PDF... ✨")
     response = requests.get(pagina_url)
     if response.status_code != 200:
-        print(f"Error al acceder a la página: {response.status_code}")
+        print(f"{Fore.RED}⚠️ Error al acceder a la página: {response.status_code}")
         return None
     
     soup = BeautifulSoup(response.content, 'html.parser')
@@ -36,6 +33,7 @@ def obtener_enlace_pdf():
             enlace_final = base_url + enlace_final  
         return enlace_final
     
+    print(f"{Fore.RED}⚠️ No se encontró el PDF en la página.")
     return None
 
 def calcular_hash(archivo):
@@ -54,20 +52,21 @@ def es_archivo_nuevo(nuevo_archivo):
     for archivo in archivos_pdf:
         ruta_archivo = os.path.join(directorio_descargas, archivo)
         hash_existente = calcular_hash(ruta_archivo)
-        print(f"Comparando con {archivo} - Hash existente: {hash_existente}")
+        print(f"{Fore.CYAN}🔍 Comparando con {archivo} - Hash existente: {hash_existente}")
         if hash_nuevo == hash_existente:
             return False  
     return True  
 
 def descargar_pdf(url):
+    print(f"{Fore.YELLOW}🔽 Iniciando la descarga del PDF...")
     response = requests.get(url, stream=True)
     if response.status_code != 200:
-        print(f"Error al descargar el archivo: {response.status_code}")
+        print(f"{Fore.RED}⚠️ Error al descargar el archivo: {response.status_code}")
         return None
     
     content_type = response.headers.get('Content-Type', '')
     if 'application/pdf' not in content_type:
-        print("El archivo descargado no es un PDF válido.")
+        print(f"{Fore.RED}⚠️ El archivo descargado no es un PDF válido.")
         return None
 
     fecha_actual = datetime.now().strftime("%d-%m-%Y")
@@ -81,18 +80,19 @@ def descargar_pdf(url):
     
     if es_archivo_nuevo(ruta_temporal):
         os.rename(ruta_temporal, ruta_final)
-        print(f"Nuevo archivo guardado en: {ruta_final}")
+        print(f"{Fore.GREEN}✅ Nuevo archivo guardado en: {ruta_final}")
     else:
-        print("El archivo ya existe en la carpeta. No se guardará una copia nueva.")
+        print(f"{Fore.YELLOW}⚠️ El archivo ya existe en la carpeta. No se guardará una copia nueva.")
         os.remove(ruta_temporal)
 
 def main():
+    print(f"{Fore.YELLOW}✨ Comenzando el proceso de descarga... ✨")
     enlace_pdf = obtener_enlace_pdf()
     if enlace_pdf:
-        print(f"Enlace del PDF encontrado: {enlace_pdf}")
+        print(f"{Fore.CYAN}🔗 Enlace del PDF encontrado: {enlace_pdf}")
         descargar_pdf(enlace_pdf)
     else:
-        print("No se encontró el PDF en la página.")
+        print(f"{Fore.RED}⚠️ No se pudo obtener el enlace al PDF.")
 
 if __name__ == '__main__':
     main()

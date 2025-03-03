@@ -8,24 +8,36 @@ import hashlib
 import pandas as pd
 from bs4 import BeautifulSoup
 from datetime import datetime
+from colorama import Fore, Style, init
 
-pagina_url = "https://pegv.gva.es/auto/scpd/web/70403Construccion/aecv00186_v.html"
-directorio_descargas = "/home/nnebot/PracticasNicoVRAIN/Datos/Nuevas_Edificaciones"
-base_url = "https://pegv.gva.es/auto/scpd/web/70403Construccion/"
+init(autoreset=True)
+
+PAGINA_URL = "https://pegv.gva.es/auto/scpd/web/70403Construccion/aecv00186_v.html"
+BASE_URL = "https://pegv.gva.es/auto/scpd/web/70403Construccion/"
+
+directorio_base = os.getcwd()
+while not os.path.exists(os.path.join(directorio_base, "Datos")) and directorio_base != "/":
+    directorio_base = os.path.dirname(directorio_base)
+
+directorio_descargas = os.path.join(directorio_base, "Datos", "Nuevas_Edificaciones")
 ruta_hash = os.path.join(directorio_descargas, "hash_edificios.txt")
 
-def obtener_enlace_excel(pagina_url, base_url):
-    response = requests.get(pagina_url)
+def obtener_enlace_excel():
+    print(f"{Fore.YELLOW}{Style.BRIGHT}🔍 Buscando el archivo Excel en la página...")
+
+    response = requests.get(PAGINA_URL)
     soup = BeautifulSoup(response.content, 'html.parser')
     enlace_excel = soup.find('a', href=True, string=lambda text: text and "Descàrrega" in text)
 
     if enlace_excel and enlace_excel['href'].endswith(".xlsx"):
         enlace_final = enlace_excel['href']
         if not enlace_final.startswith("http"):
-            enlace_final = base_url + enlace_final  
-        print(f"Enlace del archivo Excel encontrado: {enlace_final}")  
+            enlace_final = BASE_URL + enlace_final  
+        print(f"{Fore.CYAN}🔗 Enlace del archivo Excel encontrado: {Style.BRIGHT}{enlace_final}")
         return enlace_final
-    return None
+    else:
+        print(f"{Fore.RED}⚠️ No se encontró un archivo Excel en la página.")
+        return None
 
 def calcular_hash(archivo):
     sha256 = hashlib.sha256()
@@ -37,28 +49,32 @@ def calcular_hash(archivo):
 def archivo_actualizado(nuevo_archivo):
     if not os.path.exists(ruta_hash):
         return True  
+
     with open(ruta_hash, 'r') as f:
         hash_anterior = f.read().strip()
+
     hash_nuevo = calcular_hash(nuevo_archivo)
     return hash_nuevo != hash_anterior
 
 def descargar_archivo(url, destino):
-    os.makedirs(os.path.dirname(destino), exist_ok=True)  
+    os.makedirs(os.path.dirname(destino), exist_ok=True)
+    print(f"{Fore.BLUE}📥 Descargando archivo desde: {Style.BRIGHT}{url}")
+
     response = requests.get(url, stream=True)
     if response.status_code != 200:
-        print(f"Error al descargar el archivo: {response.status_code}")
+        print(f"{Fore.RED}❌ Error al descargar el archivo: {response.status_code}")
         return False
     
     if 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' not in response.headers.get('Content-Type', ''):
-        print("El archivo descargado no es un archivo Excel válido.")
+        print(f"{Fore.RED}⚠️ El archivo descargado no es un archivo Excel válido.")
         return False
     
     with open(destino, 'wb') as file:
         for chunk in response.iter_content(chunk_size=8192):
             file.write(chunk)
-    print(f"Archivo guardado en {destino}")
+    
+    print(f"{Fore.GREEN}✅ Archivo guardado en {Style.BRIGHT}{destino}")
     return True
-
 
 def convertir_a_csv(ruta_excel, ruta_csv):
     try:
@@ -66,36 +82,39 @@ def convertir_a_csv(ruta_excel, ruta_csv):
         df = df.iloc[8:-3]
         df = df.dropna(how='all')
         df.to_csv(ruta_csv, index=False, sep=';')
-        print(f"Archivo convertido y guardado como CSV en: {ruta_csv}")
+        print(f"{Fore.YELLOW}📄 Archivo convertido y guardado como CSV en: {Style.BRIGHT}{ruta_csv}")
     except Exception as e:
-        print(f"Error al convertir el archivo a CSV: {e}")
+        print(f"{Fore.RED}❌ Error al convertir el archivo a CSV: {e}")
 
 def main():
-    print(f"Buscando Excel en: {pagina_url}")
-    enlace_excel = obtener_enlace_excel(pagina_url, base_url)
+    print(f"{Fore.YELLOW}{Style.BRIGHT}✨ Iniciando el proceso de actualización de datos... ✨")
+
+    enlace_excel = obtener_enlace_excel()
 
     if enlace_excel:
-        print(f"Archivo Excel encontrado: {enlace_excel}")
-        
         ruta_temporal = os.path.join(directorio_descargas, "temp.xlsx")
+
         if descargar_archivo(enlace_excel, ruta_temporal):
             if archivo_actualizado(ruta_temporal):
-                print("El archivo ha cambiado. Actualizando...")
-                fecha_actual = datetime.now().strftime("%d-%m-%Y")
-                nombre_archivo_local = f"nuevas_edificaciones{fecha_actual}.xlsx"
-                ruta_archivo_local = os.path.join(directorio_descargas, nombre_archivo_local)
-                os.replace(ruta_temporal, ruta_archivo_local)
+                print(f"{Fore.GREEN}📌 El archivo ha cambiado. Actualizando...")
                 
+                fecha_actual = datetime.now().strftime("%d-%m-%Y")
+                nombre_archivo_local = f"nuevas_edificaciones_{fecha_actual}.xlsx"
+                ruta_archivo_local = os.path.join(directorio_descargas, nombre_archivo_local)
+                
+                os.replace(ruta_temporal, ruta_archivo_local)
                 with open(ruta_hash, 'w') as f:
                     f.write(calcular_hash(ruta_archivo_local))
-                print(f"Nuevo archivo guardado en: {ruta_archivo_local}")
-                ruta_csv_local = os.path.join(directorio_descargas, f"nuevas_edificaciones{fecha_actual}.csv")
+
+                print(f"{Fore.GREEN}✅ Nuevo archivo guardado en: {Style.BRIGHT}{ruta_archivo_local}")
+
+                ruta_csv_local = os.path.join(directorio_descargas, f"nuevas_edificaciones_{fecha_actual}.csv")
                 convertir_a_csv(ruta_archivo_local, ruta_csv_local)
             else:
-                print("No hay cambios en el archivo. No se actualiza.")
+                print(f"{Fore.YELLOW}🔄 No hay cambios en el archivo. No se actualiza.")
                 os.remove(ruta_temporal)
     else:
-        print("No se encontró un archivo Excel en la página.")
+        print(f"{Fore.RED}⚠️ No se encontró un archivo Excel para descargar.")
 
 if __name__ == '__main__':
     main()
