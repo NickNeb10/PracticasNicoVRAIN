@@ -2,6 +2,10 @@
 # coding: utf-8
 
 # In[ ]:
+"""
+Descarga un archivo CSV de certificación energética desde un enlace público, lo guarda en una carpeta,
+verifica duplicados mediante hash MD5 y evita descargas innecesarias si el archivo ya existe.
+"""
 import os
 import requests
 import hashlib
@@ -18,6 +22,15 @@ if not os.path.exists(folder_path):
     print(f"{Fore.GREEN}✅ Directorio creado en {folder_path}")
 
 def get_file_hash(file_path):
+    """
+    Calcula el hash MD5 de un archivo para comparar si ya ha sido descargado previamente.
+
+    Args:
+        file_path (str): Ruta del archivo a verificar.
+
+    Returns:
+        str or None: Hash MD5 del archivo o None si no existe.
+    """
     try:
         with open(file_path, 'rb') as f:
             file_hash = hashlib.md5(f.read()).hexdigest()
@@ -34,7 +47,7 @@ if response.status_code == 200:
         file_hash = get_file_hash(existing_file)
         if file_hash:
             existing_hashes[existing_file] = file_hash
-    
+
     if new_file_hash in existing_hashes.values():
         print(f"{Fore.YELLOW}⚠️ El fichero descargado es igual a uno existente. No se descarga un nuevo fichero.")
     else:

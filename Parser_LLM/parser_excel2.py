@@ -12,6 +12,15 @@ import unicodedata
 import hashlib
 
 def normalize_text(text):
+    """
+    Normaliza el texto eliminando espacios redundantes y aplicando normalización Unicode (NFC).
+
+    Args:
+        text (str): Texto a normalizar.
+
+    Returns:
+        str: Texto limpio y normalizado.
+    """
     if isinstance(text, str):
         text = text.strip()
         text = unicodedata.normalize("NFC", text)
@@ -19,6 +28,15 @@ def normalize_text(text):
     return text
 
 def get_file_hash(file_path):
+    """
+    Genera un hash MD5 del archivo para detectar cambios entre ejecuciones.
+
+    Args:
+        file_path (str): Ruta del archivo a procesar.
+
+    Returns:
+        str: Hash MD5 del contenido del archivo.
+    """
     hash_md5 = hashlib.md5()
     with open(file_path, "rb") as f:
         for chunk in iter(lambda: f.read(4096), b""):
@@ -26,6 +44,15 @@ def get_file_hash(file_path):
     return hash_md5.hexdigest()
 
 def get_anuario_year(directory):
+    """
+    Extrae el año del anuario desde el nombre del directorio.
+
+    Args:
+        directory (str): Nombre o ruta del directorio.
+
+    Returns:
+        str or None: Año extraído o None si no se encuentra.
+    """
     match = re.search(r"Anuario(\d{4})", directory)
     return match.group(1) if match else None
 
@@ -35,19 +62,33 @@ def get_anuario_year(directory):
 @click.option("-o", "--output", type=click.Path(), required=True, help="Archivo CSV donde se guardará la tabla encontrada")
 @click.option("-c", "--choice", type=int, default=None, help="Número de la coincidencia deseada (si hay varias)")
 @click.option("--cache-dir", default="Datos/DatosAnuario", type=click.Path(), help="Directorio donde se almacenan las cachés y CSVs")
-
 def search_text_in_excels(directory, text, output, choice, cache_dir):
+    """
+    Busca expresiones regulares dentro de archivos Excel, permite elegir una coincidencia y guarda la tabla como CSV.
+
+    Args:
+        directory (str): Directorio con los archivos Excel.
+        text (list[str]): Lista de expresiones regulares a buscar.
+        output (str): Ruta del archivo CSV de salida.
+        choice (int or None): Índice de coincidencia a seleccionar si hay varias.
+        cache_dir (str): Directorio para cachés y resultados.
+
+    Returns:
+        None
+    """
     try:
         print(f"Buscando en el directorio: {directory}")
         anuario_year = get_anuario_year(directory)
         if not anuario_year:
             print("No se pudo determinar el año del anuario. Verifica la estructura de los directorios.")
             return
-        
+
         os.makedirs(cache_dir, exist_ok=True)
         cache_file = os.path.join(cache_dir, f"processed_excels_{anuario_year}.pkl")
         cache_hashes_file = os.path.join(cache_dir, f"processed_hashes_{anuario_year}.pkl")
+
         processed_excels, processed_hashes = {}, {}
+
         if os.path.exists(cache_file) and os.path.exists(cache_hashes_file):
             with open(cache_file, "rb") as f:
                 processed_excels = pickle.load(f)
@@ -72,9 +113,9 @@ def search_text_in_excels(directory, text, output, choice, cache_dir):
                 for sheet_name in sheet_names:
                     if re.search(r"graf|map", sheet_name, re.IGNORECASE):
                         continue
-                    
+
                     df = pd.read_excel(file, sheet_name=sheet_name, header=None, dtype=str)
-                    df = df.map(normalize_text)  
+                    df = df.map(normalize_text)
                     df_dict[sheet_name] = df
 
                 processed_excels[file] = df_dict
@@ -86,7 +127,7 @@ def search_text_in_excels(directory, text, output, choice, cache_dir):
                     pickle.dump(processed_hashes, f)
             else:
                 df_dict = processed_excels[file]
-            
+
             for sheet_name, df in df_dict.items():
                 for pattern in normalized_texts:
                     regex = re.compile(pattern, re.IGNORECASE)
@@ -96,35 +137,34 @@ def search_text_in_excels(directory, text, output, choice, cache_dir):
                         found_text = df.iloc[row_idx, col_idx]
                         print(f"[{len(matches)}] Archivo: {file}, Hoja: {sheet_name}, Texto encontrado: \"{found_text}\"")
                         matches.append((file, sheet_name, df))
-        
+
         if not matches:
             print("Texto no encontrado en ningún archivo.")
             return
-        
+
         if choice is None:
             if len(matches) > 1:
                 print("Se encontraron varias coincidencias. Elija una con el parámetro -c.")
                 return
-            choice = 0  
-        
+            choice = 0
+
         if choice < 0 or choice >= len(matches):
             print("Opción inválida. Use un número dentro del rango de coincidencias.")
             return
-        
+
         file, sheet_name, df = matches[choice]
         print(f"Guardando tabla desde: {file}, Hoja: {sheet_name}")
-        
+
         output_filename = os.path.basename(output).replace("2024", anuario_year)
         output_path = os.path.join(cache_dir, output_filename)
 
         df = df.iloc[:-2]
         df.to_csv(output_path, index=False, sep=";", header=False, encoding="utf-8-sig")
-    
+
     except Exception as e:
         print(f"Error inesperado: {e}")
 
 if __name__ == "__main__":
     search_text_in_excels()
-
 
 

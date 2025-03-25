@@ -17,6 +17,12 @@ catalogo_url = 'https://www.valencia.es/cas/estadistica/catalogo-de-publicacione
 directorio_descargas = '/home/nnebot/PracticasNicoVRAIN/Datos'
 
 def obtener_ultimo_anuario():
+    """
+    Obtiene el último anuario estadístico disponible en la página del Ayuntamiento de València.
+
+    Returns:
+        tuple: Año más reciente (str) y enlace a la página del anuario (str).
+    """
     print(f"{Fore.YELLOW}{Style.BRIGHT}✨ Obteniendo el último anuario disponible... ✨\n")
     response = requests.get(catalogo_url)
     soup = BeautifulSoup(response.content, 'html.parser')
@@ -41,10 +47,17 @@ def obtener_ultimo_anuario():
     if años:
         ultimo_año = str(max(años))
         return ultimo_año, anuario_enlaces[ultimo_año]
-    
+
     return None, None
 
 def verificar_y_descargar_anuario(año, enlace_descarga):
+    """
+    Verifica y descarga el anuario estadístico para el año especificado, lo descomprime y elimina el ZIP.
+
+    Args:
+        año (str): Año del anuario.
+        enlace_descarga (str): Enlace a la página de descarga del anuario.
+    """
     response = requests.get(enlace_descarga)
     soup = BeautifulSoup(response.content, 'html.parser')
 
@@ -95,9 +108,16 @@ TABLAS_A_BUSCAR = {
 }
 
 def ejecutar_parser(directorio_anuario, año):
+    """
+    Ejecuta un script parser para extraer tablas específicas desde los archivos del anuario descomprimido.
+
+    Args:
+        directorio_anuario (str): Ruta al directorio donde se extrajo el anuario.
+        año (str): Año del anuario, usado para nombrar los archivos de salida.
+    """
     cache_dir = '/home/nnebot/PracticasNicoVRAIN/Datos/DatosAnuario'
     os.makedirs(cache_dir, exist_ok=True) 
-    
+
     print(f"\n{Fore.YELLOW}🔍 Iniciando búsqueda de tablas para el año {año}...\n")
     for nombre_base, texto_a_buscar in TABLAS_A_BUSCAR.items():
         nombre_fichero = nombre_base.format(año) 
@@ -119,6 +139,9 @@ def ejecutar_parser(directorio_anuario, año):
             print(f"{Fore.RED}⚠️ Error ejecutando el parser para {texto_a_buscar}: {e}\n")
 
 def main():
+    """
+    Función principal que coordina la obtención del anuario, su descarga y extracción de tablas.
+    """
     año, enlace_descarga = obtener_ultimo_anuario()
     if año and enlace_descarga:
         print(f"{Fore.YELLOW}📅 Último anuario encontrado: {año}\n")
