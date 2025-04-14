@@ -16,7 +16,7 @@ init(autoreset=True)
 catalogo_url = 'https://www.valencia.es/cas/estadistica/catalogo-de-publicaciones'
 
 directorio_base = os.getcwd()
-directorio_descargas = os.path.join(directorio_base, "PracticasNicoVRAIN", "Datos")
+directorio_descargas = os.path.join(directorio_base, "Datos")
 os.makedirs(directorio_descargas, exist_ok=True)
 
 def obtener_ultimo_anuario():
