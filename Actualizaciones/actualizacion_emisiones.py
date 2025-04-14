@@ -38,7 +38,7 @@ def obtener_enlace_pdf():
         return None
 
     soup = BeautifulSoup(response.content, 'html.parser')
-    enlace_pdf = soup.find('a', href=True, string=lambda text: text and "Documento resumen" in text)
+    enlace_pdf = soup.find('a', href=True, string=lambda text: text and "Informe resumen" in text)
     if enlace_pdf:
         enlace_final = enlace_pdf['href']
         if not enlace_final.startswith("http"):

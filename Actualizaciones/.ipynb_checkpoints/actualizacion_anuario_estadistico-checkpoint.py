@@ -14,7 +14,10 @@ init(autoreset=True)
 
 # URL del catálogo de publicaciones
 catalogo_url = 'https://www.valencia.es/cas/estadistica/catalogo-de-publicaciones'
-directorio_descargas = '/home/nnebot/PracticasNicoVRAIN/Datos'
+
+directorio_base = os.getcwd()
+directorio_descargas = os.path.join(directorio_base, "PracticasNicoVRAIN", "Datos")
+os.makedirs(directorio_descargas, exist_ok=True)
 
 def obtener_ultimo_anuario():
     """
